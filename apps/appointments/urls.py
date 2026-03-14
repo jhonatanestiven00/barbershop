@@ -8,6 +8,7 @@ router.register('', views.AppointmentViewSet, basename='appointment')
 urlpatterns = [
     path('availability/', views.AvailabilityView.as_view(), name='availability'),
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
+    path('smart-recommendation/', views.SmartAppointmentView.as_view(), name='smart-recommendation'),
     path('<int:pk>/status/', views.AppointmentStatusView.as_view(), name='appointment-status'),
     path('', include(router.urls)),
 ]

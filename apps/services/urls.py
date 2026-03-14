@@ -7,5 +7,6 @@ router.register('categories', views.CategoryViewSet, basename='category')
 router.register('', views.ServiceViewSet, basename='service')
 
 urlpatterns = [
+    path('recommend/', views.ServiceRecommendationView.as_view(), name='service-recommend'),
     path('', include(router.urls)),
 ]

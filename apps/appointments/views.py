@@ -8,7 +8,12 @@ from apps.appointments.utils import get_available_slots
 from datetime import datetime
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 from apps.appointments.dashboard import get_dashboard_data
-from apps.accounts.permissions import IsAdminOrBarber, IsClient, IsOwnerOrAdmin, IsAdmin
+from apps.accounts.permissions import IsAdminOrBarber, IsClient, IsOwnerOrAdmin, IsAdmin    
+from apps.appointments.ai import get_smart_appointment_recommendation
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter, inline_serializer
+from rest_framework import serializers as drf_serializers
+from apps.services.models import Service
+from apps.accounts.models import User
 
 
 
@@ -128,3 +133,106 @@ class DashboardView(views.APIView):
     def get(self, request):
         data = get_dashboard_data()
         return response.Response(data)
+
+
+class SmartAppointmentView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @extend_schema(
+        summary='Recomendación inteligente de cita',
+        request=inline_serializer(
+            name='SmartAppointmentRequest',
+            fields={'description': drf_serializers.CharField()}
+        ),
+        responses={200: inline_serializer(
+            name='SmartAppointmentResponse',
+            fields={
+                'service': drf_serializers.DictField(),
+                'barber': drf_serializers.DictField(),
+                'suggested_slots': drf_serializers.ListField(),
+                'available': drf_serializers.BooleanField(),
+                'message': drf_serializers.CharField(),
+                'reason': drf_serializers.CharField(),
+                'tips': drf_serializers.CharField(),
+            }
+        )}
+    )
+    def post(self, request):
+        description = request.data.get('description')
+
+        if not description:
+            return response.Response(
+                {'error': 'El campo description es requerido.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if len(description) < 5:
+            return response.Response(
+                {'error': 'La descripción es muy corta, sé más específico.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            recommendation = get_smart_appointment_recommendation(description)
+
+            # Si no hay disponibilidad devolvemos 200 pero con available=False
+            # para que el frontend pueda manejarlo sin romper el flujo
+            return response.Response(recommendation)
+
+        except Service.DoesNotExist:
+            return response.Response(
+                {'error': 'No se encontró un servicio adecuado para tu descripción.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except User.DoesNotExist:
+            return response.Response(
+                {'error': 'No hay barberos disponibles en este momento.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return response.Response(
+                {'error': 'No se pudo generar la recomendación. Intenta de nuevo.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    permission_classes = [permissions.IsAuthenticated]
+
+    @extend_schema(
+        summary='Recomendación inteligente de cita',
+        request=inline_serializer(
+            name='SmartAppointmentRequest',
+            fields={'description': drf_serializers.CharField()}
+        ),
+        responses={200: inline_serializer(
+            name='SmartAppointmentResponse',
+            fields={
+                'service': drf_serializers.DictField(),
+                'barber': drf_serializers.DictField(),
+                'suggested_slots': drf_serializers.ListField(),
+                'reason': drf_serializers.CharField(),
+                'tips': drf_serializers.CharField(),
+            }
+        )}
+    )
+    def post(self, request):
+        description = request.data.get('description')
+
+        if not description:
+            return response.Response(
+                {'error': 'El campo description es requerido.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if len(description) < 5:
+            return response.Response(
+                {'error': 'La descripción es muy corta, sé más específico.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            recommendation = get_smart_appointment_recommendation(description)
+            return response.Response(recommendation)
+        except Exception as e:
+            return response.Response(
+                {'error': 'No se pudo generar la recomendación. Intenta de nuevo.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
