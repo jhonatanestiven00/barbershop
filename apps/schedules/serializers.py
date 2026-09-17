@@ -9,4 +9,7 @@ class ScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
         fields = '__all__'
-        read_only_fields = ['id']
+        # "barber" no se recibe del cliente: siempre se asigna desde el
+        # usuario autenticado (ver ScheduleViewSet.perform_create), así
+        # un barbero no puede editar el horario de otro.
+        read_only_fields = ['id', 'barber']

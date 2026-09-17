@@ -14,7 +14,11 @@ class User(AbstractUser):
         choices=Role.choices,
         default=Role.CLIENT
     )
-    phone = models.CharField(max_length=15, blank=True)
+    # Únicos porque el login se hace con cualquiera de los dos; null=True
+    # (en vez de solo blank) para que Postgres no choque el UNIQUE
+    # constraint entre varias filas con cadena vacía.
+    email = models.EmailField(blank=True, null=True, unique=True)
+    phone = models.CharField(max_length=15, blank=True, null=True, unique=True)
     image_url = models.URLField(blank=True, help_text='Enlace de imagen de perfil')
 
     def __str__(self):

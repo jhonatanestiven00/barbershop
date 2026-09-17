@@ -12,7 +12,9 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
-            return [permissions.IsAuthenticated()]
+            # El catálogo es público: se puede explorar sin sesión,
+            # solo agendar requiere estar autenticado.
+            return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
 
@@ -28,7 +30,9 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
-            return [permissions.IsAuthenticated()]
+            # El catálogo es público: se puede explorar sin sesión,
+            # solo agendar requiere estar autenticado.
+            return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
 

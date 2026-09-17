@@ -28,10 +28,10 @@ class AppointmentSerializer(serializers.ModelSerializer):
                 {'start_datetime': 'No puedes agendar una cita en una fecha u hora pasada.'}
             )
 
-        # Regla 2: Anticipación mínima de 2 horas
-        if start and start < now + timedelta(hours=2):
+        # Regla 2: Anticipación mínima de 1 hora
+        if start and start < now + timedelta(hours=1):
             raise serializers.ValidationError(
-                {'start_datetime': 'Debes agendar con al menos 2 horas de anticipación.'}
+                {'start_datetime': 'Debes agendar con al menos 1 hora de anticipación.'}
             )
 
         # Regla 3: Anticipación máxima de 30 días
@@ -69,7 +69,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             # Regla 6: Límite de 2 citas por día por cliente
             client_daily = Appointment.objects.filter(
                 client=client,
-                status__in=['pending', 'confirmed'],
+                status='scheduled',
                 start_datetime__date=start.date()
             )
             if self.instance:
@@ -82,7 +82,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             # Regla 7: Barbero sin conflicto de horario
             barber_conflict = Appointment.objects.filter(
                 barber=barber,
-                status__in=['pending', 'confirmed'],
+                status='scheduled',
                 start_datetime__lt=end,
                 end_datetime__gt=start
             )
@@ -96,7 +96,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             # Regla 8: Cliente sin conflicto de horario
             client_conflict = Appointment.objects.filter(
                 client=client,
-                status__in=['pending', 'confirmed'],
+                status='scheduled',
                 start_datetime__lt=end,
                 end_datetime__gt=start
             )

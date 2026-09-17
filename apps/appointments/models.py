@@ -5,9 +5,9 @@ from apps.services.models import Service
 
 class Appointment(models.Model):
     class Status(models.TextChoices):
-        PENDING = 'pending', 'Pendiente'
-        CONFIRMED = 'confirmed', 'Confirmada'
-        CANCELLED = 'cancelled', 'Cancelada'
+        SCHEDULED = 'scheduled', 'Agendada'
+        CANCELLED_BY_CLIENT = 'cancelled_client', 'Cancelada por cliente'
+        CANCELLED_BY_BARBER = 'cancelled_barber', 'Cancelada por barbero'
         COMPLETED = 'completed', 'Completada'
 
     client = models.ForeignKey(
@@ -30,9 +30,9 @@ class Appointment(models.Model):
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
     status = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=Status.choices,
-        default=Status.PENDING
+        default=Status.SCHEDULED
     )
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

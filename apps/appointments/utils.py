@@ -35,7 +35,7 @@ def get_available_slots(barber, date, service):
         # Verificar que no haya cita en ese slot
         conflict = Appointment.objects.filter(
             barber=barber,
-            status__in=['pending', 'confirmed'],
+            status='scheduled',
             start_datetime__lt=slot_end,
             end_datetime__gt=slot_start
         ).exists()

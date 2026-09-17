@@ -43,7 +43,7 @@ def get_dashboard_data():
 
     # Próximas citas del día
     upcoming = today_appointments.filter(
-        status__in=['pending', 'confirmed'],
+        status='scheduled',
         start_datetime__gte=timezone.now()
     ).order_by('start_datetime')[:5]
 

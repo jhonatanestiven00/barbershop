@@ -24,6 +24,12 @@ class ScheduleViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [permissions.IsAuthenticated()]
-        elif self.action in ['update', 'partial_update']:
+        elif self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAdminOrBarber()]
         return [IsAdmin()]
+
+    def perform_create(self, serializer):
+        # Un barbero solo puede crear horarios para sí mismo. get_queryset
+        # ya limita list/retrieve/update/destroy a sus propias filas; esto
+        # cubre el caso de create, que no pasa por ese queryset.
+        serializer.save(barber=self.request.user)

@@ -1,5 +1,9 @@
-from rest_framework import generics, permissions, filters
-from apps.accounts.serializers import RegisterSerializer, UserSerializer
+from rest_framework import generics, permissions, filters, response
+from apps.accounts.serializers import (
+    RegisterSerializer,
+    UserSerializer,
+    EmailOrPhoneTokenObtainPairSerializer,
+)
 from apps.accounts.models import User
 from apps.accounts.permissions import IsAdmin, IsSuperUser
 
@@ -13,6 +17,16 @@ class RegisterView(generics.CreateAPIView):
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
+
+
+class EmailOrPhoneLoginView(generics.GenericAPIView):
+    serializer_class = EmailOrPhoneTokenObtainPairSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return response.Response(serializer.validated_data)
 
 
 class ProfileView(generics.RetrieveUpdateAPIView):
